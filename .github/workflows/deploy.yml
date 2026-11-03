@@ -61,6 +61,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: eu-central-1
+          
+      - name: Debug Credentials
+        run: |
+          aws sts get-caller-identity
+          echo "Access key ends with: ${AWS_ACCESS_KEY_ID: -4}"
+          aws ecr get-authorization-token --query "authorizationData[0].expiresAt"
 
       - name: Bei ECR anmelden
         id: ecr-login
