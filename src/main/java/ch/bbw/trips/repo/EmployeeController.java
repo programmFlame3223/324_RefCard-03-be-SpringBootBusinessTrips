@@ -13,9 +13,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -116,16 +116,21 @@ public class EmployeeController {
 	}
 
 	@GetMapping("/employees/{id}/photo")
-	public ResponseEntity<Resource> downloadPhoto(@PathVariable Long id) throws MalformedURLException {
+	public ResponseEntity<Resource> downloadPhoto(@PathVariable Long id) {
 		Employee employee = employeeRepository.findById(id)
-			.orElseThrow(() -> new TriptNotFoundException(id));
+				.orElseThrow(() -> new TriptNotFoundException(id));
 		if (employee.getProfilePictureFilename() == null) {
 			return ResponseEntity.notFound().build();
 		}
-		Resource resource = fileStorageService.load(employee.getProfilePictureFilename());
-		return ResponseEntity.ok()
-			.contentType(MediaType.IMAGE_JPEG)
-			.body(resource);
+		try {
+			FileStorageService.StoredImage image = fileStorageService.load(employee.getProfilePictureFilename());
+			return ResponseEntity.ok()
+					.contentType(MediaType.parseMediaType(image.contentType()))
+					.contentLength(image.contentLength())
+					.body(image.resource());
+		} catch (NoSuchKeyException e) {
+			return ResponseEntity.notFound().build();
+		}
 	}
 
 }
