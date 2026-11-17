@@ -1,19 +1,25 @@
 package ch.bbw.trips.repo;
 
 import ch.bbw.trips.ex.TriptNotFoundException;
+import ch.bbw.trips.storage.FileStorageService;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.core.io.Resource;
 
 @RestController
 @RequestMapping("/v1")
@@ -25,6 +31,9 @@ public class EmployeeController {
 
 	@Autowired
 	private PasswordEncoder passwordEncoder;
+
+	@Autowired
+	private FileStorageService fileStorageService;
 
 	@PostMapping("/signIn")
 	@ResponseStatus(HttpStatus.OK)
@@ -94,6 +103,29 @@ public class EmployeeController {
 	@DeleteMapping("/employees")
 	void deleteAllEmployees() {
 		employeeRepository.deleteAll();
+	}
+
+	@PostMapping("/employees/{id}/photo")
+	public ResponseEntity<Void> uploadPhoto(@PathVariable Long id, @RequestParam("file") MultipartFile file) throws IOException {
+		Employee employee = employeeRepository.findById(id)
+			.orElseThrow(() -> new TriptNotFoundException(id));
+		String filename = fileStorageService.store(file);
+		employee.setProfilePictureFilename(filename);
+		employeeRepository.save(employee);
+		return ResponseEntity.ok().build();
+	}
+
+	@GetMapping("/employees/{id}/photo")
+	public ResponseEntity<Resource> downloadPhoto(@PathVariable Long id) throws MalformedURLException {
+		Employee employee = employeeRepository.findById(id)
+			.orElseThrow(() -> new TriptNotFoundException(id));
+		if (employee.getProfilePictureFilename() == null) {
+			return ResponseEntity.notFound().build();
+		}
+		Resource resource = fileStorageService.load(employee.getProfilePictureFilename());
+		return ResponseEntity.ok()
+			.contentType(MediaType.IMAGE_JPEG)
+			.body(resource);
 	}
 
 }

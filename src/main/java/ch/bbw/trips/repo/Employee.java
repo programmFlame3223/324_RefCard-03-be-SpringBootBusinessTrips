@@ -23,6 +23,7 @@ public class Employee implements Serializable {
 	private String name;
 	private String jobTitle;
 	private String username;
+	private String profilePictureFilename;
 
 	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
 	private String password;
@@ -103,14 +104,20 @@ public class Employee implements Serializable {
 		this.flights = flights;
 	}
 
-
-
 	public List<BusinessTrip> getTrips() {
 		return trips;
 	}
 
 	public void setTrips(List<BusinessTrip> trips) {
 		this.trips = trips;
+	}
+
+	public String getProfilePictureFilename() {
+		return profilePictureFilename;
+	}
+
+	public void setProfilePictureFilename(String profilePictureFilename) {
+		this.profilePictureFilename = profilePictureFilename;
 	}
 
 	@Override

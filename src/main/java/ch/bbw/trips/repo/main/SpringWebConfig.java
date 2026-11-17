@@ -12,7 +12,7 @@ public class SpringWebConfig implements WebMvcConfigurer {
 	@Override
 	public void addCorsMappings(CorsRegistry registry) {
 		registry.addMapping("/v1/**")
-				.allowedOrigins("http://localhost:3000", "http://localhost:3001", "http://localhost:5173", "http://biztrip-alb-740363715.us-east-1.elb.amazonaws.com/")
+				.allowedOrigins("http://localhost:3000", "http://localhost:3001", "http://localhost:5173", "http://biztrip-alb-740363715.us-east-1.elb.amazonaws.com")
 				.allowedMethods("GET", "POST", "PUT", "DELETE")
 				.allowedHeaders("Authorization", "Content-Type")
 				.exposedHeaders("Authorization");
